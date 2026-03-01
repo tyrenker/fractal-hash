@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Fractal-Hash — Demo</title>
+  <meta name="description" content="Turn any cryptographic hash or SSH fingerprint into unique, deterministic fractal art.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono&display=swap">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+<header>
+  <div class="logo">
+    <span class="logo-emoji">🔮</span>
+    <span>Fractal-Hash</span>
+  </div>
+  <button class="theme-toggle" id="theme-toggle" title="Toggle dark/light mode">🌙</button>
+</header>
+
+<main>
+
+  <!-- Input -->
+  <section class="input-section">
+    <label class="input-label" for="hash-input">Hash · Fingerprint · Any String</label>
+    <input
+      type="text"
+      id="hash-input"
+      class="hash-input"
+      placeholder="SHA256:nThbg6kXUpJWGl7E1IGOCspRomTxdCARLviKw6E5SY8"
+      autocomplete="off"
+      spellcheck="false"
+    >
+  </section>
+
+  <!-- Fractal display -->
+  <section class="display-section">
+    <div class="canvas-wrapper">
+      <h3>Fractal</h3>
+      <div class="canvas-container">
+        <canvas id="primary-canvas" width="256" height="256"></canvas>
+      </div>
+    </div>
+
+    <div class="canvas-wrapper">
+      <h3>Sensitivity — 1-character change</h3>
+      <div class="compare-grid">
+        <div class="compare-item">
+          <div class="canvas-container">
+            <canvas id="compare-canvas-a" width="128" height="128"></canvas>
+          </div>
+          <p class="compare-label" id="compare-label-a">Current</p>
+        </div>
+        <div class="compare-item">
+          <div class="canvas-container">
+            <canvas id="compare-canvas-b" width="128" height="128"></canvas>
+          </div>
+          <p class="compare-label" id="compare-label-b">Modified</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Metadata -->
+  <section>
+    <p class="section-title">Parameters</p>
+    <div class="metadata-grid" id="metadata">
+      <div class="meta-card"><div class="meta-label">Type</div><div class="meta-value" id="meta-type">—</div></div>
+      <div class="meta-card"><div class="meta-label">Palette</div><div class="meta-value" id="meta-palette">—</div></div>
+      <div class="meta-card"><div class="meta-label">Harmony</div><div class="meta-value" id="meta-harmony">—</div></div>
+      <div class="meta-card"><div class="meta-label">Symmetry</div><div class="meta-value" id="meta-symmetry">—</div></div>
+      <div class="meta-card"><div class="meta-label">Iterations</div><div class="meta-value" id="meta-iter">—</div></div>
+      <div class="meta-card"><div class="meta-label">Zoom</div><div class="meta-value" id="meta-zoom">—</div></div>
+    </div>
+  </section>
+
+  <!-- Actions -->
+  <section>
+    <p class="section-title">Actions</p>
+    <div class="actions">
+      <button class="btn btn-primary" id="download-btn">⬇ Download PNG</button>
+      <button class="btn btn-secondary" id="copy-url-btn">Copy Data URL</button>
+      <button class="btn btn-secondary" id="copy-code-btn">Copy Code</button>
+    </div>
+  </section>
+
+  <!-- Gallery -->
+  <section class="gallery-section">
+    <h2>Famous Fingerprints</h2>
+    <div class="gallery" id="gallery"></div>
+  </section>
+
+</main>
+
+<div class="toast" id="toast"></div>
+
+<script type="module">
+// ── Imports (browser-safe dist modules) ──────────────────────────────────────
+import { normalize }          from '../../dist/core/normalizer.js';
+import { extractParameters }  from '../../dist/core/parameter-extractor.js';
+import { renderJulia }        from '../../dist/fractals/julia.js';
+
+// ── Helpers ──────────────────────────────────────────────────────────────────
+
+/** Render a FractalConfig onto a canvas element. Returns a PNG data URL. */
+function renderToCanvas(config, canvas) {
+  const w = canvas.width;
+  const h = canvas.height;
+  const { pixels } = renderJulia(config, w, h);
+  const ctx = canvas.getContext('2d');
+  const imageData = ctx.createImageData(w, h);
+  imageData.data.set(pixels);
+  ctx.putImageData(imageData, 0, 0);
+  return canvas.toDataURL('image/png');
+}
+
+/** Full pipeline: string → pixels → canvas. Returns PNG data URL. */
+async function renderInput(input, canvas) {
+  const bytes = await normalize(input);
+  const config = extractParameters(bytes);
+  config.background.darkMode = document.documentElement.dataset.theme === 'dark';
+  renderToCanvas(config, canvas);
+  return { config, dataUrl: canvas.toDataURL('image/png') };
+}
+
+function debounce(fn, ms) {
+  let timer;
+  return (...args) => { clearTimeout(timer); timer = setTimeout(() => fn(...args), ms); };
+}
+
+function showToast(msg, duration = 2000) {
+  const toast = document.getElementById('toast');
+  toast.textContent = msg;
+  toast.classList.add('visible');
+  setTimeout(() => toast.classList.remove('visible'), duration);
+}
+
+// ── State ────────────────────────────────────────────────────────────────────
+let currentInput   = '';
+let currentDataUrl = '';
+let currentConfig  = null;
+
+// ── DOM refs ─────────────────────────────────────────────────────────────────
+const inputEl      = document.getElementById('hash-input');
+const primaryCanvas = document.getElementById('primary-canvas');
+const compareA     = document.getElementById('compare-canvas-a');
+const compareB     = document.getElementById('compare-canvas-b');
+const labelA       = document.getElementById('compare-label-a');
+const labelB       = document.getElementById('compare-label-b');
+
+// ── Metadata update ──────────────────────────────────────────────────────────
+function updateMeta(config) {
+  document.getElementById('meta-type').textContent      = config.fractalType;
+  document.getElementById('meta-palette').textContent   = config.palette.saturationProfile;
+  document.getElementById('meta-harmony').textContent   = config.palette.harmony;
+  document.getElementById('meta-symmetry').textContent  = `${config.symmetry.order}-fold`;
+  document.getElementById('meta-iter').textContent      = config.iterations;
+  document.getElementById('meta-zoom').textContent      = config.viewport.zoom.toFixed(2) + '×';
+}
+
+// ── Main render ──────────────────────────────────────────────────────────────
+async function doRender(value) {
+  if (!value.trim()) return;
+  currentInput = value;
+
+  primaryCanvas.classList.add('rendering');
+
+  try {
+    const { config, dataUrl } = await renderInput(value, primaryCanvas);
+    currentConfig  = config;
+    currentDataUrl = dataUrl;
+    updateMeta(config);
+
+    // Side-by-side comparison: current vs one-char-different
+    await renderInput(value, compareA);
+    labelA.textContent = value.length > 20 ? value.slice(-20) + '…' : value;
+
+    const modified = value.slice(0, -1) + (value.slice(-1) === 'A' ? 'B' : 'A');
+    await renderInput(modified, compareB);
+    labelB.textContent = (modified.length > 20 ? modified.slice(-20) + '…' : modified);
+
+  } finally {
+    primaryCanvas.classList.remove('rendering');
+  }
+}
+
+const debouncedRender = debounce(doRender, 300);
+
+inputEl.addEventListener('input', (e) => debouncedRender(e.target.value));
+
+// ── Theme toggle ─────────────────────────────────────────────────────────────
+const themeToggle = document.getElementById('theme-toggle');
+themeToggle.addEventListener('click', () => {
+  const html = document.documentElement;
+  const isDark = html.dataset.theme === 'dark';
+  html.dataset.theme = isDark ? 'light' : 'dark';
+  themeToggle.textContent = isDark ? '☀️' : '🌙';
+  // Re-render so background matches theme
+  if (currentInput) doRender(currentInput);
+});
+
+// ── Download PNG ─────────────────────────────────────────────────────────────
+document.getElementById('download-btn').addEventListener('click', async () => {
+  if (!currentInput) return showToast('Enter a hash first');
+  // Render at 512×512 for download
+  const offscreen = document.createElement('canvas');
+  offscreen.width = 512;
+  offscreen.height = 512;
+  const bytes = await normalize(currentInput);
+  const config = extractParameters(bytes);
+  config.background.darkMode = document.documentElement.dataset.theme === 'dark';
+  const dataUrl = renderToCanvas(config, offscreen);
+  const link = document.createElement('a');
+  link.href = dataUrl;
+  link.download = `fractal-hash-${Date.now()}.png`;
+  link.click();
+  showToast('Downloading 512×512 PNG…');
+});
+
+// ── Copy Data URL ─────────────────────────────────────────────────────────────
+document.getElementById('copy-url-btn').addEventListener('click', async () => {
+  if (!currentDataUrl) return showToast('Enter a hash first');
+  await navigator.clipboard.writeText(currentDataUrl);
+  showToast('Data URL copied to clipboard!');
+});
+
+// ── Copy Code ─────────────────────────────────────────────────────────────────
+document.getElementById('copy-code-btn').addEventListener('click', async () => {
+  if (!currentInput) return showToast('Enter a hash first');
+  const code = `import { fractalHash } from 'fractal-hash';\n\nconst image = await fractalHash('${currentInput}', { format: 'png', size: 512 });\n// image is a data:image/png;base64,... URL`;
+  await navigator.clipboard.writeText(code);
+  showToast('Code snippet copied!');
+});
+
+// ── Gallery ───────────────────────────────────────────────────────────────────
+const GALLERY_ITEMS = [
+  { label: 'GitHub SSH',   input: 'SHA256:nThbg6kXUpJWGl7E1IGOCspRomTxdCARLviKw6E5SY8' },
+  { label: 'GitLab SSH',   input: 'SHA256:ROQFvPThGrW4RuWLoL9tq9I9zJ42fK4XywyRtbOz/EQ' },
+  { label: 'hello-world',  input: 'hello-world' },
+  { label: 'fractal-hash', input: 'fractal-hash-is-cool' },
+  { label: 'Bitcoin #0',   input: 'bitcoin:1A1zP1eP5QGefi2DMPTfTL5SLmv7DivfNa' },
+  { label: 'PGP key',      input: 'pgp:4096R/ABCDEF01' },
+  { label: 'TLS cert',     input: 'tls:*.example.com' },
+  { label: 'ED25519',      input: 'ssh-ed25519 AAAAC3NzaC1lZDI1NTE5' },
+];
+
+async function buildGallery() {
+  const gallery = document.getElementById('gallery');
+  for (const item of GALLERY_ITEMS) {
+    const wrapper = document.createElement('div');
+    wrapper.className = 'gallery-item';
+    wrapper.title = item.input;
+
+    const canvas = document.createElement('canvas');
+    canvas.width = 128;
+    canvas.height = 128;
+
+    const label = document.createElement('p');
+    label.className = 'gallery-label';
+    label.textContent = item.label;
+
+    wrapper.append(canvas, label);
+    gallery.appendChild(wrapper);
+
+    // Click to load into main input
+    wrapper.addEventListener('click', () => {
+      inputEl.value = item.input;
+      doRender(item.input);
+    });
+
+    // Render asynchronously so the page doesn't freeze
+    await renderInput(item.input, canvas);
+  }
+}
+
+// ── Init ─────────────────────────────────────────────────────────────────────
+const DEFAULT_INPUT = 'SHA256:nThbg6kXUpJWGl7E1IGOCspRomTxdCARLviKw6E5SY8';
+inputEl.value = DEFAULT_INPUT;
+doRender(DEFAULT_INPUT);
+buildGallery();
+</script>
+</body>
+</html>

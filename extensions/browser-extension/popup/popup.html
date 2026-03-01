@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Fractal-Hash</title>
+  <link rel="stylesheet" href="popup.css">
+</head>
+<body>
+  <header>
+    <h1>Fractal-Hash</h1>
+    <p class="subtitle">Visual TLS Fingerprint</p>
+  </header>
+
+  <main>
+    <div id="fractal-container">
+      <div id="loading" class="spinner" aria-label="Generating fractal…"></div>
+      <img id="fractal-img" alt="Fractal fingerprint" style="display:none" width="128" height="128">
+    </div>
+
+    <section id="info">
+      <div class="row">
+        <span class="label">Host</span>
+        <span id="hostname" class="value mono">—</span>
+      </div>
+      <div class="row">
+        <span class="label">Input</span>
+        <span id="fingerprint" class="value mono truncate">—</span>
+      </div>
+    </section>
+
+    <p id="no-https" class="warning" style="display:none">
+      No HTTPS connection on this page.
+    </p>
+  </main>
+
+  <footer>
+    <a href="https://github.com/YOUR_USERNAME/fractal-hash" target="_blank" rel="noopener">
+      fractal-hash
+    </a>
+  </footer>
+
+  <script src="popup.js"></script>
+</body>
+</html>

@@ -1,0 +1,19 @@
+GEMINI.md
+PROGRESS.md
+FRACTAL_HASH_PLAN.md
+phases/*
+CLAUDE.md
+.claude/*
+*.gif
+
+# Build output
+dist/
+
+# Dependencies
+node_modules/
+
+# npm pack artifacts
+*.tgz
+
+# macOS metadata
+.DS_Store

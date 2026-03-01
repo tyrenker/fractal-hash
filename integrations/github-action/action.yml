@@ -1,0 +1,34 @@
+name: 'Fractal-Hash Checksums'
+description: 'Generate visual fractal fingerprints for release artifact checksums and embed them in release notes.'
+author: 'fractal-hash'
+
+branding:
+  icon: 'eye'
+  color: 'purple'
+
+inputs:
+  files:
+    description: 'Glob pattern for files to hash (e.g. dist/*.tar.gz)'
+    required: true
+  algorithm:
+    description: 'Hash algorithm: sha256 or sha512'
+    required: false
+    default: 'sha256'
+  size:
+    description: 'Fractal image size in pixels'
+    required: false
+    default: '64'
+  output-dir:
+    description: 'Directory to write fractal PNG images'
+    required: false
+    default: 'fractal-checksums'
+
+outputs:
+  markdown:
+    description: 'Markdown table with filenames, checksums, and fractal images'
+  checksums-file:
+    description: 'Path to the generated checksums.txt file'
+
+runs:
+  using: 'node20'
+  main: 'dist/index.js'

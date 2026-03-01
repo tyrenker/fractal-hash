@@ -1,0 +1,54 @@
+{
+  "name": "fractal-hash-vscode",
+  "displayName": "Fractal-Hash",
+  "description": "Hover over any hash string to see its fractal fingerprint visualization",
+  "version": "1.0.0",
+  "publisher": "fractal-hash",
+  "license": "MIT",
+  "engines": {
+    "vscode": "^1.80.0"
+  },
+  "categories": ["Visualization", "Other"],
+  "keywords": ["hash", "fractal", "fingerprint", "sha256", "ssh", "identicon"],
+  "activationEvents": ["onStartupFinished"],
+  "main": "./dist/extension.js",
+  "contributes": {
+    "configuration": {
+      "title": "Fractal-Hash",
+      "properties": {
+        "fractalHash.size": {
+          "type": "number",
+          "default": 128,
+          "minimum": 32,
+          "maximum": 512,
+          "description": "Size in pixels of the fractal thumbnail shown in hover tooltips."
+        },
+        "fractalHash.background": {
+          "type": "string",
+          "default": "dark",
+          "enum": ["dark", "light"],
+          "description": "Background style for the fractal image."
+        },
+        "fractalHash.enabled": {
+          "type": "boolean",
+          "default": true,
+          "description": "Enable or disable fractal hover tooltips."
+        }
+      }
+    }
+  },
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "watch": "tsc -p tsconfig.json --watch",
+    "package": "npx vsce package"
+  },
+  "dependencies": {
+    "fractal-hash": "*"
+  },
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "@types/vscode": "^1.80.0",
+    "@vscode/vsce": "^2.21.0",
+    "typescript": "^5.0.0"
+  }
+}

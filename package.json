@@ -1,0 +1,82 @@
+{
+  "name": "fractal-hash",
+  "version": "0.1.1",
+  "description": "Turn any cryptographic hash into unique, deterministic fractal art",
+  "type": "module",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "exports": {
+    ".": {
+      "import": "./dist/index.js",
+      "types": "./dist/index.d.ts"
+    },
+    "./react": {
+      "import": "./dist/react/FractalHashImage.js",
+      "types": "./dist/react/FractalHashImage.d.ts"
+    },
+    "./animation": {
+      "import": "./dist/animation/morph.js",
+      "types": "./dist/animation/morph.d.ts"
+    },
+    "./audio": {
+      "import": "./dist/audio/sonify.js",
+      "types": "./dist/audio/sonify.d.ts"
+    },
+    "./accessibility": {
+      "import": "./dist/accessibility/describe.js",
+      "types": "./dist/accessibility/describe.d.ts"
+    }
+  },
+  "bin": {
+    "fractal-hash": "./dist/bin/fractal-hash.js"
+  },
+  "files": [
+    "dist/",
+    "README.md",
+    "LICENSE"
+  ],
+  "scripts": {
+    "build": "tsc",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "demo": "npm run build && npx serve .",
+    "prepublishOnly": "npm run build && npm test"
+  },
+  "keywords": [
+    "hash",
+    "fractal",
+    "fingerprint",
+    "visualization",
+    "ssh",
+    "cryptography",
+    "security",
+    "identicon",
+    "visual-hash"
+  ],
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/tyrenker/fractal-hash"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "peerDependencies": {
+    "react": ">=18.0.0"
+  },
+  "peerDependenciesMeta": {
+    "react": {
+      "optional": true
+    }
+  },
+  "devDependencies": {
+    "@types/node": "^25.3.2",
+    "@types/react": "^19.2.14",
+    "react": "^19.2.4",
+    "typescript": "^5.9.3",
+    "vitest": "^4.0.18"
+  },
+  "dependencies": {
+    "fractal-hash": "^0.1.0"
+  }
+}

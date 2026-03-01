@@ -1,0 +1,25 @@
+{
+  "manifest_version": 3,
+  "name": "Fractal-Hash: Visual TLS Fingerprints",
+  "version": "1.0.0",
+  "description": "See your TLS certificate as a fractal — spot certificate changes instantly",
+  "permissions": ["activeTab", "tabs"],
+  "action": {
+    "default_popup": "popup/popup.html",
+    "default_icon": {
+      "16": "icons/icon-16.png",
+      "48": "icons/icon-48.png"
+    }
+  },
+  "background": {
+    "service_worker": "background.js"
+  },
+  "icons": {
+    "16":  "icons/icon-16.png",
+    "48":  "icons/icon-48.png",
+    "128": "icons/icon-128.png"
+  },
+  "content_security_policy": {
+    "extension_pages": "script-src 'self'; object-src 'self'"
+  }
+}
