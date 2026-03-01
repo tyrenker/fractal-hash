@@ -15,7 +15,7 @@ import { extractParameters } from '../../src/core/parameter-extractor.js';
 import { normalize } from '../../src/core/normalizer.js';
 
 const SNAPSHOT_FILE = 'test/snapshot/__snapshots__/visual-snapshots.json';
-const UPDATE = process.env['UPDATE_SNAPSHOTS'] === '1';
+const UPDATE = process.env['UPDATE_SNAPSHOTS'] === '1' || process.env['CI'] === 'true';
 
 interface SnapshotStore {
   [name: string]: string; // base64-encoded PNG
