@@ -11,6 +11,27 @@
 
 Humans are terrible at comparing hex strings — `a3f9…` and `a3e9…` look identical at a glance. But we're excellent at recognising visual patterns. Fractal-Hash converts any hash into a vivid, deterministic fractal: identical inputs produce identical images, and a single-bit change produces a completely different fractal. Use it to visually verify SSH host keys, compare release checksums, or add visual flair to any identity system.
 
+## Gallery
+
+Same input → identical fractal, every time. Different input → completely different image.
+
+| `SHA256:nThbg6kX…` | `bitcoin-genesis` | `ed25519-key` | `hello` |
+|:---:|:---:|:---:|:---:|
+| ![GitHub SSH key](examples/gallery/gallery-github.png) | ![Bitcoin genesis hash](examples/gallery/gallery-bitcoin.png) | ![ed25519 key](examples/gallery/gallery-ed25519.png) | ![hello](examples/gallery/gallery-hello.png) |
+
+## One-Character Sensitivity
+
+A single character change produces a completely different fractal — you see the difference instantly.
+
+| Input: `"v1.0.0"` | Input: `"v1.0.1"` |
+|:---:|:---:|
+| ![v1.0.0 fractal](examples/gallery/compare-v1.0.0.png) | ![v1.0.1 fractal](examples/gallery/compare-v1.0.1.png) |
+
+```bash
+npx fractal-hash --format png --size 256 -o v1.0.0.png "v1.0.0"
+npx fractal-hash --format png --size 256 -o v1.0.1.png "v1.0.1"
+```
+
 ## Install
 
 ```bash
