@@ -1,4 +1,5 @@
 import { describe, it, expect } from 'vitest';
+import { getRandomValues } from 'node:crypto';
 import { extractParameters } from '../src/core/parameter-extractor.js';
 
 function makeBytes(fill: number): Uint8Array {
@@ -95,7 +96,7 @@ describe('extractParameters', () => {
 
   it('determinism — same bytes → same config', () => {
     const bytes = new Uint8Array(32);
-    crypto.getRandomValues(bytes);
+    getRandomValues(bytes);
     const a = extractParameters(bytes);
     const b = extractParameters(bytes);
     expect(a).toEqual(b);
