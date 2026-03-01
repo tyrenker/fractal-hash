@@ -47,8 +47,15 @@ function isBase64(s: string): boolean {
 async function sha256(input: string): Promise<Uint8Array> {
   const encoder = new TextEncoder();
   const data = encoder.encode(input);
-  const hashBuffer = await crypto.subtle.digest('SHA-256', data);
-  return new Uint8Array(hashBuffer);
+
+  if (typeof globalThis.crypto !== 'undefined' && globalThis.crypto.subtle) {
+    const hashBuffer = await globalThis.crypto.subtle.digest('SHA-256', data);
+    return new Uint8Array(hashBuffer);
+  } else {
+    const { createHash } = await import('node:crypto');
+    const hash = createHash('sha256').update(data).digest();
+    return new Uint8Array(hash);
+  }
 }
 
 /** SHA-256 a string synchronously using Node's built-in crypto */
